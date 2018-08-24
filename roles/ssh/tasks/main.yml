@@ -1,0 +1,4 @@
+- name: 开启 {{ansible_user}} 用户 SSH 免密登录
+  authorized_key:
+    user: '{{ansible_user}}'
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
