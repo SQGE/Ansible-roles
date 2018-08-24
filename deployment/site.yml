@@ -1,0 +1,39 @@
+- hosts: '{{product}}:&{{srv_name}}'
+  gather_facts: no
+  become: yes
+  roles:
+    - check
+
+- hosts: '{{product}}:&{{srv_name}}'
+  gather_facts: no
+  pre_tasks:
+    - set_fact:
+        product_backup_dir: '{{backup_prefix}}/{{product}}'
+
+    - name: backup | 保证产品备份目录存在
+      file:
+        state: directory
+        path: '{{product_backup_dir}}'
+        owner: '{{ansible_user}}'
+        group: '{{ansible_user}}'
+        mode: '0755'
+      become: yes
+
+  roles:
+    - backup
+
+- hosts: '{{product}}:&{{srv_name}}'
+  gather_facts: no
+  pre_tasks:
+    - set_fact:
+        product_app_dir: '{{app_prefix}}/{{product}}'
+    - name: deploy | 保证产品安装目录存在
+      file:
+        state: directory
+        path: '{{product_app_dir}}'
+        owner: '{{ansible_user}}'
+        group: '{{ansible_user}}'
+        mode: '0755'
+      become: yes
+  roles:
+    - deploy

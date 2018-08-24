@@ -1,0 +1,8 @@
+---
+
+- name: check | 工作目录如果不存在则创建
+  file: path={{ item }} state=directory owner={{ansible_user}} group={{ansible_user}} mode=0755
+  with_items:
+    - "{{ app_prefix }}"
+    - "{{ backup_prefix }}"
+    - "{{ log_prefix }}"

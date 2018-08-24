@@ -1,0 +1,89 @@
+---
+- name: backup | 设置 now 变量，精确到分钟
+  set_fact:
+    now: '{{ lookup("pipe", "date +%Y%m%d%H%M") }}'
+
+- name: backup | 设置 backup_dir 变量为 {{backup_prefix}}/{{product}}/{{srv_name}}/{{now}}
+  set_fact:
+    backup_dir: '{{backup_prefix}}/{{product}}/{{srv_name}}/{{now}}'
+
+- name: backup | zip安装包设置 deploy_dir 变量为 {{app_prefix}}/{{product}}/{{srv_name}}
+  set_fact:
+    deploy_dir: '{{app_prefix}}/{{product}}/{{srv_name}}'
+  when: srv_type == 'zip'
+
+- name: backup | 设置 catalina_home 变量为 {{app_prefix}}/{{product}}/tomcat-{{srv_name}}
+  set_fact:
+    catalina_home: '{{app_prefix}}/{{product}}/tomcat-{{srv_name}}'
+  when: srv_type == 'war'
+
+- name: backup | 获取 {{catalina_home}} 文件状态
+  stat:
+    path: '{{catalina_home}}'
+  register: stat_result
+  when: srv_type == 'war'
+
+- name: backup | Tomcat 目录 {{catalina_home}} 不存在，无需备份
+  meta: end_play
+  when: srv_type == 'war' and 
+        (not stat_result.stat.exists or
+        stat_result.stat.isdir is defined and 
+        not stat_result.stat.isdir)
+
+- name: backup | war安装包设置 deploy_dir 变量为 {{catalina_home}}/webapps/{{srv_name}}
+  set_fact:
+    deploy_dir: '{{catalina_home}}/webapps/{{srv_name}}'
+  when: srv_type == 'war'
+
+- name: backup | 获取 {{deploy_dir}} 文件状态
+  stat:
+    path: '{{deploy_dir}}'
+  register: stat_result
+
+- name: backup | 安装目录 {{deploy_dir}} 不存在，无需备份
+  meta: end_play
+  when: not stat_result.stat.exists or
+        (stat_result.stat.isdir is defined and
+        not stat_result.stat.isdir)
+
+- name: backup | 创建 {{backup_dir}} 备份目录
+  file:
+    path: '{{backup_dir}}'
+    state: directory
+
+- name: backup | 开始备份 {{profile}} 环境 {{product}}/{{srv_name}} 服务 ......
+  block:
+    - name: backup | 复制 {{deploy_dir}} 目录到 {{backup_dir}} 目录
+      shell: cp -rt {{backup_dir}} {{deploy_dir}}
+      register: backup_result
+      when: stat_result.stat.isdir
+
+    - name: backup | 创建软连接 {{backup_prefix}}/{{product}}/{{srv_name}}/latest -> {{backup_dir}}
+      file:
+        src: '{{backup_dir}}'
+        path: '{{backup_prefix}}/{{product}}/{{srv_name}}/latest'
+        state: link
+
+  rescue:
+    - name: backup | 备份失败，删除备份目录 {{backup_dir}}
+      file:
+        path: '{{backup_dir}}'
+        state: absent
+      register: clean_result
+
+    - name: backup | 删除备份目录 {{backup_dir}} 失败，请手动删除
+      fail:
+      when: clean_result.failed 
+
+  always:
+    - name: backup | 列出要删除的旧的备份，默认只保留 3 份
+      shell: ls -r | grep -x '[0-9]\{'{{now|length}}'\}' | tail -n+4
+      args:
+        chdir: '{{backup_prefix}}/{{product}}/{{srv_name}}'
+      register: ls_result
+
+    - name: backup | 删除旧的备份
+      file:
+        path: '{{backup_prefix}}/{{product}}/{{srv_name}}/{{item}}'
+        state: absent
+      with_items: '{{ls_result.stdout_lines}}'

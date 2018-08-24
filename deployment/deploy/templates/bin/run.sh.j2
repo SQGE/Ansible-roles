@@ -1,0 +1,87 @@
+#!/bin/sh
+
+# Set neccesary environment variables
+JAVA_OPTS='-Xmx384m -Xms384m -XX:+HeapDumpOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom -XX:AutoBoxCacheMax=20000'
+DIAMOND_OPTS='-Dxdiamond.server.host={{xdiamond_server_host}} -Dxdiamond.project.profile={{profile}} -Dxdiamond.project.secretkey='
+
+# Resolve soft link, $0 may be a soft link
+PRG="$0" 
+
+while [ -h "$PRG" ]; do
+  link=`readlink "$PRG"`
+  if expr "$link" : '/.*' > /dev/null; then
+    PRG="$link"
+  else
+    PRG=`dirname "$PRG"`/"$link"
+  fi
+done
+
+PRGDIR=$(cd `dirname $PRG`; cd ..; pwd)
+PIDFILE=`basename "$PRGDIR"`.pid
+
+cd $PRGDIR
+JARFILE=`ls -t *.jar | head -1`
+
+killed=0
+
+case "$1" in  
+
+  start)  
+    if [ -f "$PIDFILE" ]; then
+      PID=`cat "$PIDFILE"`
+      if [ ! -f /proc/${PID}/status ]; then
+        echo "Delete stale pid file"
+        rm -f "$PIDFILE"
+        echo "Starting ..."
+        nohup "$JAVA_HOME"/bin/java $JAVA_OPTS $DIAMOND_OPTS -jar "$JARFILE" > /dev/null 2>&1 &
+        echo $! > $PIDFILE
+      else
+        echo "$PIDFILE exists, process is already running or crashed"
+      fi
+    else
+      echo "Starting ..."
+      nohup $JAVA_HOME/bin/java $JAVA_OPTS $DIAMOND_OPTS -jar "$JARFILE" > /dev/null 2>&1 &
+      echo $! > $PIDFILE
+    fi
+    ;;  
+  
+  stop)  
+    if [ ! -f "$PIDFILE" ]
+    then
+      echo "$PIDFILE does not exist, process is not running"
+    else
+      PID=`cat "$PIDFILE"`
+      echo "Stopping process $PID"
+      kill "$PID"
+      echo "Waiting for" `basename "$PRGDIR"` "to shutdown ..."
+
+      for ((i=0; i<30; i++))
+      do
+        if [ -f /proc/${PID}/status ]; then
+          sleep 1
+        else
+          echo `basename "$PRGDIR"` "normally stopped"
+          killed=1
+          break
+        fi
+      done
+
+      if ! ((killed)); then
+        kill -9 ${PID}
+        echo `basename "$PRGDIR"` "force stopped"
+      fi
+      rm -f "$PIDFILE"
+    fi
+    ;;  
+  
+  restart)  
+    "$PRG" stop  
+    "$PRG" start  
+    ;;  
+  
+  *)  
+    echo "Usage: run.sh {start|stop|restart}"  
+    ;;  
+  
+esac 
+exit 0
