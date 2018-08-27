@@ -1,0 +1,13 @@
+- name: 将 {{ansible_user}} 加入 wheel 组
+  user:
+    state: present
+    name: '{{ansible_user}}'
+    append: yes
+    groups: wheel
+
+- lineinfile:
+    state: present
+    insertafter: '^[ \t]*%wheel[ \t]+ALL[ \t]+=[ \t]+\(ALL\)[ \t]+NOPASSWD:[ \t]+ALL[ \t]+$'
+    line: '%wheel  ALL=(ALL)       NOPASSWD: ALL'
+    path: /etc/sudoers
+    validate: /usr/sbin/visudo -cf %s
