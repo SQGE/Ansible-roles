@@ -13,12 +13,12 @@ services:
           gitlab_rails['smtp_enable'] = true
           gitlab_rails['smtp_address'] = "smtp.qq.com"
           gitlab_rails['smtp_port'] = 465
-          gitlab_rails['smtp_user_name'] = "417787129@qq.com"
-          gitlab_rails['smtp_password'] = "ngjarjjoniwhcbcd"
+          gitlab_rails['smtp_user_name'] = "xx@qq.com"
+          gitlab_rails['smtp_password'] = "xx"
           gitlab_rails['smtp_authentication'] = "login"
           gitlab_rails['smtp_enable_starttls_auto'] = true
           gitlab_rails['smtp_tls'] = true
-          gitlab_rails['gitlab_email_from'] = '417787129@qq.com'
+          gitlab_rails['gitlab_email_from'] = 'xx@qq.com'
       ports:
         - '80:80'
         - '443:443'
