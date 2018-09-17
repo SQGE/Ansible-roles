@@ -13,4 +13,4 @@ ansible_port=22222
 
 执行
 
-ansible-playbook  -i /inventory/test site.yml
+ansible-playbook  -i /inventory/test site.yml 
