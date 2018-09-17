@@ -1,0 +1,11 @@
+#!/bin/sh
+
+JAVA7_HOME=/usr/java/jdk1.7.0_80
+JRE7_HOME=/usr/java/jdk1.7.0_80/jre
+JAVA8_HOME=/usr/java/jdk1.8.0_181-amd64
+JRE8_HOME=/usr/java/jdk1.8.0_181-amd64/jre
+JAVA_HOME="$JAVA7_HOME"
+JRE_HOME="$JRE7_HOME"
+PATH="$JRE_HOME"/bin:"$JAVA_HOME"/bin:"$PATH"
+
+export JAVA7_HOME JRE7_HOME JAVA8_HOME JRE8_HOME JAVA_HOME JRE_HOME PATH

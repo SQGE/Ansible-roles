@@ -1,0 +1,48 @@
+---
+
+- name: install jdk | 检查{{java_file_path7}}文件是否存在.
+  stat: path={{java_file_path7}}
+  connection: local
+  register: java_file_result
+
+- name: install jdk | 检查{{java_file_path8}}文件是否存在.
+  stat: path={{java_file_path8}}
+  connection: local
+  register: java_file_result
+  
+- name: install jdk | 确定 {{software_src_path}} 目录存在.
+  file: path={{ software_src_path }} state=directory
+
+- name: install jdk |  {{java_file_path7}}  to {{software_src_path}}.
+  copy:
+    src: "{{java_file_path7}}"
+    dest: "{{java_file_dest7}}"
+
+- name: install jdk |  {{java_file_path8}}  to {{software_src_path}}.
+  copy:
+    src: "{{java_file_path8}}"
+    dest: "{{java_file_dest8}}"
+    
+- name: install jdk | deploy {{java_file_dest7}}.
+  yum: 
+    name: "{{java_file_dest7}}"
+    state: present
+
+- name: install jdk | deploy {{java_file_dest8}}.
+  yum: 
+    name: "{{java_file_dest8}}"
+    state: present
+    
+- name: Set JAVA_HOME if configured.
+  template:
+    src: java.sh
+    dest: /etc/profile.d/java.sh
+    mode: 0644
+    
+- name: java version
+  command: javac -version
+  register: result
+  changed_when: false
+  ignore_errors: True
+
+- debug: var=result.stderr

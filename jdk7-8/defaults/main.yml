@@ -1,0 +1,17 @@
+---
+
+software_files_path: "/home/hswk/jdk_dir"
+software_src_path: "/data/ftp/software"
+
+java_version: "1.8"
+java_home7: "/usr/java/jdk1.7.0_80"
+java_home8: "/usr/java/jdk1.8.0_181-amd64"
+
+java_file7: "jdk-7u80-linux-x64.rpm"
+java_file8: "jdk-8u181-linux-x64.rpm"
+
+java_file_path7: "{{ software_files_path }}/{{ java_file7 }}"
+java_file_path8: "{{ software_files_path }}/{{ java_file8 }}"
+
+java_file_dest7: "{{ software_src_path }}/{{ java_file7 }}"
+java_file_dest8: "{{ software_src_path }}/{{ java_file8 }}"
