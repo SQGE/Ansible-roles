@@ -10,6 +10,7 @@ services:
     volumes:
       - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
       - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - ./redis/data:/data:rw
     logging: 
       driver: "json-file"
       options: 
