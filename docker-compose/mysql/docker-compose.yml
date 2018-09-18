@@ -12,5 +12,3 @@ services:
     volumes:
     - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
     - ./data/db:/var/lib/mysql
-
-
