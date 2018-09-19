@@ -2,7 +2,7 @@
 
 # Set neccesary environment variables
 JAVA_OPTS='-Xmx384m -Xms384m -XX:+HeapDumpOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom -XX:AutoBoxCacheMax=20000'
-DIAMOND_OPTS='-Dxdiamond.server.host={{xdiamond_server_host}} -Dxdiamond.project.profile={{profile}} -Dxdiamond.project.secretkey='
+DIAMOND_OPTS='-Dxdiamond.server.host={{xdiamond_server_host}} -Dxdiamond.project.profile={{xdiamond_project_profile}} -Dxdiamond.project.secretkey='
 
 # Resolve soft link, $0 may be a soft link
 PRG="$0" 
@@ -19,7 +19,7 @@ done
 PRGDIR=$(cd `dirname $PRG`; cd ..; pwd)
 PIDFILE=`basename "$PRGDIR"`.pid
 
-cd $PRGDIR
+pushd $PRGDIR > /dev/null
 JARFILE=`ls -t *.jar | head -1`
 
 killed=0
@@ -72,9 +72,10 @@ case "$1" in
       fi
       rm -f "$PIDFILE"
     fi
-    ;;  
+    ;;
   
-  restart)  
+  restart)
+    popd > /dev/null
     "$PRG" stop  
     "$PRG" start  
     ;;  

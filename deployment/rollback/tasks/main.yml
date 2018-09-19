@@ -78,6 +78,7 @@
     executable: /bin/bash
   when: srv_type == 'war'
 
+
 - name: deploy | 设置 zip 包服务 pid_file 变量为 {{deploy_dir}}/{{srv_name}}.pid
   set_fact:
     pid_file: '{{deploy_dir}}/{{srv_name}}.pid'
