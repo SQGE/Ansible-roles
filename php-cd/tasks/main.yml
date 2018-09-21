@@ -1,12 +1,12 @@
 ---
-- name: 目录权限配置
+- name: sync code
   synchronize:
     src: /data/code
     dest: /var/www/
     rsync_opts:
       - "--no-motd"
       - "--exclude=.git"
-- name: 目录权限修改
+- name: file cofig set
   file:
     path: /var/www
     owner: www
