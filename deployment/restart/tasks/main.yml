@@ -1,0 +1,73 @@
+---
+
+- name: deploy | 设置 pkg_dir 变量为 {{pkg_prefix}}/{{profile}}/{{product}}/{{srv_name}}
+  set_fact: 
+    pkg_dir : '{{pkg_prefix}}/{{profile}}/{{product}}/{{srv_name}}'
+
+- name: deploy | 设置 zip 包 deploy_dir 变量为 {{app_prefix}}/{{product}}/{{srv_name}}
+  set_fact:
+    deploy_dir: '{{app_prefix}}/{{product}}/{{srv_name}}'
+  when: srv_type == 'zip'
+
+- name: deploy | 设置 war 包 catalina_home 变量为 {{app_prefix}}/{{product}}/tomcat-{{srv_name}}
+  set_fact:
+    catalina_home: '{{app_prefix}}/{{product}}/tomcat-{{srv_name}}'
+  when: srv_type == 'war'
+
+- name: deploy | 设置 war 包 deploy_dir 变量为 {{catalina_home}}/webapps/{{srv_name}}
+  set_fact:
+    deploy_dir: '{{catalina_home}}/webapps/{{srv_name}}'
+  when: srv_type == 'war'
+
+- name: deploy | 停止 zip 包应用服务
+  shell: 'set -m; . /etc/profile; . ~/.bash_profile; sh bin/run.sh stop || /bin/true'
+  args:
+    chdir: '{{deploy_dir}}'
+  when: srv_type == 'zip'
+  ignore_errors: yes
+
+- name: deploy | 停止 war 包应用服务
+  shell: 'set -m; . /etc/profile; . ~/.bash_profile; sh bin/shutdown.sh -force || /bin/true'
+  args:
+    chdir: '{{app_prefix}}/{{product}}/tomcat-{{srv_name}}'
+  when: srv_type == 'war'
+
+- name: deploy | 启动 zip 包服务
+  shell: 'set -m; . /etc/profile; . ~/.bash_profile; sh bin/run.sh start'
+  args:
+    chdir: '{{deploy_dir}}'
+    executable: /bin/bash
+  when: srv_type == 'zip'
+
+- name: deploy | 启动 war 包服务
+  shell: 'set -m; . /etc/profile; . ~/.bash_profile; bin/catalina.sh start'
+  args:
+    chdir: '{{catalina_home}}'
+    executable: /bin/bash
+  when: srv_type == 'war'
+
+- name: deploy | 设置 zip 包服务 pid_file 变量为 {{deploy_dir}}/{{srv_name}}.pid
+  set_fact:
+    pid_file: '{{deploy_dir}}/{{srv_name}}.pid'
+  when: srv_type == 'zip'
+
+- name: deploy | 设置 war 包服务 pid_file 变量为 {{catalina_home}}/temp/catalina.pid
+  set_fact:
+      pid_file: '{{catalina_home}}/temp/catalina.pid'
+  when: srv_type == 'war'
+
+- name: deploy | 等待服务启动，确保 {{pid_file}} 存在
+  wait_for:
+    path: '{{pid_file}}'
+    state: present
+    timeout: 15
+
+- name: deploy | 设置 pid 变量
+  shell: head -n1 {{pid_file}}
+  register: pid_result
+
+- name: deploy | 等待服务启动，进程号 {{pid_result.stdout}}，确保 /proc/{{pid_result.stdout}}/status 文件存在
+  wait_for:
+    path: /proc/{{pid_result.stdout}}/status
+    state: present
+    timeout: 15 
