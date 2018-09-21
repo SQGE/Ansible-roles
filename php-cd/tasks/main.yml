@@ -1,0 +1,14 @@
+---
+- name: 目录权限配置
+  synchronize:
+    src: /data/code
+    dest: /var/www/
+    rsync_opts:
+      - "--no-motd"
+      - "--exclude=.git"
+- name: 目录权限修改
+  file:
+    path: /var/www
+    owner: www
+    group: www
+    mode: 0644
