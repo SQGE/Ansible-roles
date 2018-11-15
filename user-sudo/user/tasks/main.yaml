@@ -1,0 +1,19 @@
+---
+
+- name: Create | {{ app_user }} group.
+  group:
+    name: '{{ app_user }}'
+
+- name: Create | {{ app_user }} user.
+  user:
+    name: '{{ app_user }}'
+    group: '{{ app_user }}'
+    shell: /bin/bash
+    
+- name: Create | {{ app_user }}用户.SSH目录.
+  file:
+    path: /home/{{ app_user }}/.ssh
+    state: directory
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0700
