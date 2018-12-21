@@ -1,0 +1,10 @@
+---
+
+
+# 上线代码的存储目录
+deploy_code: "/data/code"
+
+# 当前代码(也就是上一版本的代码)的存储目录
+online_code: "/var/www"
+
+

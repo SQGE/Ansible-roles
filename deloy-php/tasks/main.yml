@@ -1,0 +1,15 @@
+---
+- name: deploy | 同步代码
+  synchronize:
+    src: '{{ deploy_code }}'
+    dest: '{{ online_code }}'
+    rsync_opts:
+      - "--no-motd"
+      - "--exclude=.git"
+
+- name: deploy | 修改权限为www
+  file:
+    path: '{{ online_code }}'
+    owner: www
+    group: www
+    mode: 0644
