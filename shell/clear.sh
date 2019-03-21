@@ -1,5 +1,14 @@
-#!/bin/bash
+#!/bin/sh
+set -e
 
-dir=/data/ftp/logs
-find $dir -mtime +7 -type f -exec rm -rf {} \;
-find $dir -type f ! -name "core.log" |xargs rm -f ;
+dir="/data/ftp/log"
+
+product=($dir/test1 $dir/test2)
+
+for d in ${product[*]}
+
+do
+
+  find $d -mtime +7 -type f -exec rm -rf {} \;
+
+done
