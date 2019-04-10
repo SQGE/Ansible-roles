@@ -6,6 +6,7 @@ dir=/data/ftp/log
 ls -l $dir | while read i;
 do
 
+cd $dir
 
 size=`echo $i | awk '{print $5}'`
 file=`echo $i | awk '{print $9}'`
