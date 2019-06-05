@@ -34,7 +34,7 @@ debug(){
   if [ $? -eq "0" ]; then
     echo "${JARFILE} is already running. pid=${pid} ."
   else
-    nohup java -jar $JARFILE 
+    exec java -jar $JARFILE 
   fi
 }
 
